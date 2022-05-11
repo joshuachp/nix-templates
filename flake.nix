@@ -2,7 +2,7 @@
   description = "A collection of flake templates";
   outputs = {self}: {
     templates = {
-      trivial = {
+      rust = {
         path = ./rust;
         description = "Rust template with fenix and naersk";
       };
