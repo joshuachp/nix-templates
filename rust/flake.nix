@@ -31,7 +31,7 @@
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       naersk-lib = pkgs.callPackage naersk {};
-    in {
+    in rec {
       packages.default =
         (naersk-lib.override {
           inherit (fenix.packages.${system}.stable) cargo rustc;
@@ -39,9 +39,7 @@
         .buildPackage {
           root = ./.;
         };
-
-      defaultApp = flake-utils.lib.mkApp {drv = self.defaultPackage."${system}";};
-
+      app.default = flake-utils.lib.mkApp {drv = packages.default;};
       devShells.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           (fenix.packages.${system}.stable.withComponents [
