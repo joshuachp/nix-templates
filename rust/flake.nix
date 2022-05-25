@@ -27,22 +27,31 @@
     naersk,
     fenix,
     ...
-  }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
-      naersk-lib = pkgs.callPackage naersk {};
-    in rec {
-      packages.default =
+  }: let
+    eachDefaultSystemMap = flake-utils.lib.eachDefaultSystemMap;
+  in rec {
+    packages = eachDefaultSystemMap (system: let
+      naersk-lib = naersk.lib.${system};
+      fenix-pkg = fenix.packages.${system}.stable;
+    in {
+      default =
         (naersk-lib.override {
-          inherit (fenix.packages.${system}.stable) cargo rustc;
+          inherit (fenix-pkg) cargo rustc;
         })
-        .buildPackage {
-          root = ./.;
-        };
-      app.default = flake-utils.lib.mkApp {drv = packages.default;};
-      devShells.default = pkgs.mkShell {
+        .buildPackage {root = ./.;};
+    });
+    apps = eachDefaultSystemMap (system: {
+      default = flake-utils.lib.mkApp {
+        drv = packages.${system}.default;
+      };
+    });
+    devShells = eachDefaultSystemMap (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+      fenix-pkg = fenix.packages.${system}.stable;
+    in {
+      default = pkgs.mkShell {
         buildInputs = with pkgs; [
-          (fenix.packages.${system}.stable.withComponents [
+          (fenix-pkg.withComponents [
             "cargo"
             "clippy"
             "rust-src"
@@ -53,4 +62,5 @@
         ];
       };
     });
+  };
 }
