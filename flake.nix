@@ -6,11 +6,11 @@
         path = ./rust;
         description = "Rust template with fenix and naersk";
       };
-      rust = {
+      web = {
         path = ./web;
         description = "Web template with node and yarn";
       };
-      defaultTemplate = self.templates.trivial;
+      defaultTemplate = self.templates.rust;
     };
   };
 }
