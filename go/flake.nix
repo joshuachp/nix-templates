@@ -16,17 +16,22 @@
     { self
     , nixpkgs
     , flake-utils
+    , lib
     , ...
     }:
     let
       eachDefaultSystemMap = flake-utils.lib.eachDefaultSystemMap;
     in
     rec {
-      packages = eachDefaultSystemMap (system: {
-        default = buildGoModule {
-          src = "./";
-        };
-      });
+      packages = eachDefaultSystemMap (system:
+        let
+          pkgs = import nixpkgs { inherit system; };
+        in
+        {
+          default = pkgs.buildGoModule {
+            src = "./";
+          };
+        });
       apps = eachDefaultSystemMap (system: {
         default = flake-utils.lib.mkApp {
           drv = packages.${system}.default;
