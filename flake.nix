@@ -1,6 +1,6 @@
 {
   description = "A collection of flake templates";
-  outputs = {self}: {
+  outputs = { self }: {
     templates = {
       rust = {
         path = ./rust;

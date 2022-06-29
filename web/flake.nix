@@ -12,16 +12,18 @@
       flake = false;
     };
   };
-  outputs = {
-    self,
-    nixpkgs,
-    flake-utils,
-    md-json,
-    ...
-  }:
-    flake-utils.lib.eachDefaultSystem (system: let
+  outputs =
+    { self
+    , nixpkgs
+    , flake-utils
+    , md-json
+    , ...
+    }:
+    flake-utils.lib.eachDefaultSystem (system:
+    let
       pkgs = nixpkgs.legacyPackages.${system};
-    in {
+    in
+    {
       devShells.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           pre-commit
