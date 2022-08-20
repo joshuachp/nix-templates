@@ -38,8 +38,6 @@
       eachSystemMap = flake-utils.lib.eachSystemMap supportedSystems;
     in
     rec {
-      inherit supportedSystems;
-
       packages = eachSystemMap (system:
         let
           naersk-lib = naersk.lib.${system};
