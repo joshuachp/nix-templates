@@ -16,7 +16,6 @@
     { self
     , nixpkgs
     , flake-utils
-    , md-json
     , ...
     }:
     flake-utils.lib.eachDefaultSystem (system:
