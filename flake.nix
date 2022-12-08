@@ -14,6 +14,10 @@
         path = ./web;
         description = "Web template with node and yarn";
       };
+      haskell = {
+        path = ./haskell;
+        description = "Hakell template using haskell.nix";
+      };
       defaultTemplate = self.templates.rust;
     };
   };
