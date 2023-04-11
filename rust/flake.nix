@@ -1,8 +1,7 @@
 {
+  description = "A rust example flake";
   inputs = {
-    nixpkgs = {
-      url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -12,18 +11,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
   };
   outputs =
     { self
     , nixpkgs
-    , flake-utils
-    , naersk
     , fenix
-    , ...
+    , naersk
+    , flake-utils
     }:
     let
       supportedSystems = with flake-utils.lib.system; [
@@ -32,47 +26,35 @@
         aarch64-linux
         aarch64-darwin
       ];
-      eachSystemMap = flake-utils.lib.eachSystemMap supportedSystems;
+      eachSystem = flake-utils.lib.eachSystem supportedSystems;
     in
-    rec {
-      packages = eachSystemMap (system:
-        let
-          naersk-lib = naersk.lib.${system};
-          fenix-pkg = fenix.packages.${system}.stable;
-        in
-        {
-          default =
-            (naersk-lib.override {
-              inherit (fenix-pkg) cargo rustc;
-            }).buildPackage { root = ./.; };
-        });
+    eachSystem (system:
+    let
+      pkgs = import nixpkgs { inherit system; };
+      toolchain = fenix.packages.${system}.stable;
+      naersk' = pkgs.callPackage naersk {
+        rustc = toolchain;
+        cargo = toolchain;
+      };
+    in
+    {
+      packages.default = naersk'.buildPackage {
+        src = ./.;
+      };
 
-      apps = eachSystemMap (system: {
-        default = flake-utils.lib.mkApp {
-          drv = packages.${system}.default;
-        };
-      });
+      apps.default = flake-utils.lib.mkApp {
+        drv = self.packages.${system}.default;
+      };
 
-      devShells = eachSystemMap (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          fenix-pkg = fenix.packages.${system}.stable;
-        in
-        {
-          default =
-            pkgs.mkShell
-              {
-                buildInputs = with pkgs; [
-                  (fenix-pkg.withComponents [
-                    "cargo"
-                    "clippy"
-                    "rust-src"
-                    "rustc"
-                    "rustfmt"
-                  ])
-                  pre-commit
-                ];
-              };
-        });
-    };
+      devShells.default = pkgs.mkShell {
+        inputsFrom = with self.packages.${system}; [
+          default
+        ];
+        packages = with pkgs; [
+          pre-commit
+          nixpkgs-fmt
+          rust-analyzer
+        ];
+      };
+    });
 }
