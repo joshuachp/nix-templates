@@ -6,6 +6,7 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
+      - id: check-merge-conflict
   - repo: https://github.com/joshuachp/pre-commit-hooks
     rev: 0.1.22
     hooks:
@@ -13,6 +14,8 @@ repos:
       - id: rust-clippy
       - id: rust-build
       - id: rust-test
+      - id: rust-doc
+      - id: rust-hack
       - id: nix-nixpkgs-fmt
       - id: nix-flake-check
       - id: nix-build
