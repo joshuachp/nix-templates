@@ -6,8 +6,8 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    naersk = {
-      url = "github:nmattia/naersk/master";
+    crane = {
+      url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
@@ -16,30 +16,20 @@
     { self
     , nixpkgs
     , fenix
-    , naersk
+    , crane
     , flake-utils
     }:
-    let
-      supportedSystems = with flake-utils.lib.system; [
-        x86_64-linux
-        x86_64-darwin
-        aarch64-linux
-        aarch64-darwin
-      ];
-      eachSystem = flake-utils.lib.eachSystem supportedSystems;
-    in
-    eachSystem (system:
+    flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
       toolchain = fenix.packages.${system}.stable;
-      naersk' = pkgs.callPackage naersk {
-        rustc = toolchain;
-        cargo = toolchain;
-      };
+      craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
     in
     {
-      packages.default = naersk'.buildPackage {
-        src = ./.;
+      packages.default = craneLib.buildPackage {
+        src = craneLib.cleanCargoSource (craneLib.path ./.);
+
+        srictDeps = true;
       };
 
       apps.default = flake-utils.lib.mkApp {
