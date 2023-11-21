@@ -6,6 +6,10 @@
         path = ./rust;
         description = "Rust template with fenix and naersk";
       };
+      rust-shell = {
+        path = ./rust-shell;
+        description = "Rust template for a nightly shell";
+      };
       go = {
         path = ./go;
         description = "Go template to build go module";
