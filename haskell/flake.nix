@@ -1,7 +1,7 @@
 {
   description = "Haskell flake template";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
     haskellNix = {
       url = "github:input-output-hk/haskell.nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -13,11 +13,12 @@
     };
   };
   outputs =
-    { self
-    , nixpkgs
-    , flake-utils
-    , haskellNix
-    , ...
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      haskellNix,
+      ...
     }:
     let
       supportedSystems = with flake-utils.lib.system; [
@@ -28,25 +29,23 @@
       ];
       eachSystemMap = flake-utils.lib.eachSystemMap supportedSystems;
     in
-    rec{
-      packages = eachSystemMap
-        (system:
-          let
-            pkgs = nixpkgs.legacyPackages.${system};
-          in
-          rec {
-            helloHaskell = pkgs.haskell-nix.cabalProject {
-              pname = "helloHaskell";
-              src = ./.;
-            };
-            default = helloHaskell;
-          });
+    rec {
+      packages = eachSystemMap (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        rec {
+          helloHaskell = pkgs.haskell-nix.cabalProject {
+            pname = "helloHaskell";
+            src = ./.;
+          };
+          default = helloHaskell;
+        }
+      );
 
       apps = eachSystemMap (system: {
-        default = flake-utils.lib.mkApp {
-          drv = packages.${system}.default;
-        };
+        default = flake-utils.lib.mkApp { drv = packages.${system}.default; };
       });
-
     };
 }
