@@ -8,10 +8,7 @@
     };
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
   };
@@ -32,39 +29,24 @@
           overlays = [ (import rust-overlay) ];
         };
         toolchain = pkgs.rust-bin.stable.latest.default;
+        toolchainDev = (
+          toolchain.override {
+            extensions = [
+              "rust-analyzer"
+              "rust-src"
+            ];
+          }
+        );
         craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
         packages = self.packages.${system};
         inherit (pkgs) callPackage;
       in
       {
-        packages.default = craneLib.buildPackage {
-          src = craneLib.cleanCargoSource (craneLib.path ./.);
-          srictDeps = true;
-        };
+        packages.default = callPackage ./nix/package.nix { inherit craneLib; };
 
         apps.default = flake-utils.lib.mkApp { drv = packages.default; };
 
-        devShells.default =
-          let
-            toolchainDev = (
-              toolchain.override {
-                extensions = [
-                  "rust-analyzer"
-                  "rust-src"
-                ];
-              }
-            );
-          in
-          pkgs.mkShell {
-            inputsFrom = [ packages.default ];
-            packages =
-              (with pkgs; [
-                pre-commit
-                nixpkgs-fmt
-              ])
-              ++ [ toolchainDev ];
-            RUST_SRC_PATH = "${toolchainDev}";
-          };
+        devShells.default = callPackage ./nix/shell.nix { inherit toolchainDev packages; };
       }
     );
 }
