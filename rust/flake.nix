@@ -57,11 +57,12 @@
           in
           pkgs.mkShell {
             inputsFrom = [ packages.default ];
-            packages = with pkgs; [
-              pre-commit
-              nixpkgs-fmt
-              toolchainDev
-            ];
+            packages =
+              (with pkgs; [
+                pre-commit
+                nixpkgs-fmt
+              ])
+              ++ [ toolchainDev ];
             RUST_SRC_PATH = "${toolchainDev}";
           };
       }
