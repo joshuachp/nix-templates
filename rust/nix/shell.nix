@@ -1,9 +1,9 @@
 {
+  packages,
   mkShell,
   pre-commit,
   nixfmt,
-  packages,
-  toolchainDev,
+  rustup,
 }:
 
 mkShell {
@@ -11,7 +11,6 @@ mkShell {
   packages = [
     pre-commit
     nixfmt
-    toolchainDev
+    rustup
   ];
-  RUST_SRC_PATH = "${toolchainDev}";
 }
